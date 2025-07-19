@@ -154,6 +154,20 @@
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
         }
 
+        .breakdown-item {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .breakdown-label {
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
         .action-plan {
             background: #fff3cd;
             border: 1px solid #ffeaa7;
@@ -189,14 +203,14 @@
 <body>
     <div class="container">
         <h1>🎯 目標達成アファメーション生成アプリ</h1>
-        <p class="subtitle">あなたの目標を効果的なアファメーションに変換します</p>
+        <p class="subtitle">あなたの目標を5つの法則で効果的なアファメーションに変換します</p>
         
         <div>
             <label for="goalInput">あなたの目標を入力してください：</label>
             <textarea 
                 id="goalInput" 
                 maxlength="3000" 
-                placeholder="例：来年までに英語を流暢に話せるようになりたい。毎日勉強して、TOEICで900点以上を取りたい..."
+                placeholder="例：英語をマスターしたい。TOEICで高得点を取りたい。転職に成功したい..."
             ></textarea>
             <div class="char-counter">
                 <span id="charCount">0</span> / 3000文字
@@ -209,6 +223,16 @@
             <div class="result-box">
                 <h2 class="result-title">✨ あなたの目標達成アファメーション</h2>
                 <div id="affirmationText" class="affirmation-text"></div>
+            </div>
+            
+            <div class="result-box">
+                <h2 class="result-title">📊 変換のポイント</h2>
+                <div id="breakdown"></div>
+            </div>
+            
+            <div class="result-box">
+                <h2 class="result-title">🎯 3つの要素</h2>
+                <div id="threePoints"></div>
             </div>
             
             <div class="action-plan">
@@ -233,6 +257,7 @@
             charCount.textContent = this.value.length;
         });
 
+        // 5つの法則に基づいてアファメーションを生成
         function generateAffirmation() {
             const goal = goalInput.value.trim();
             
@@ -241,22 +266,269 @@
                 return;
             }
             
-            // シンプルなアファメーション生成
-            let affirmation = `私は${goal}を達成している。`;
+            // 目標を分析
+            const analysis = analyzeGoal(goal);
             
-            // 目標に応じて追加のフレーズを生成
-            if (goal.includes('毎日')) {
-                affirmation += '私は毎日着実に前進し、成長を実感している。';
-            } else {
-                affirmation += '私は着実に目標に向かって進んでいる。';
-            }
-            
-            // ポジティブな感情を追加
-            affirmation += '私はこの過程を楽しみ、充実感と喜びを感じている。';
-            affirmation += '私は自分の可能性を信じ、確実に理想の自分へと近づいている。';
+            // 5つの法則を適用してアファメーションを生成
+            const affirmation = createAffirmation(analysis);
             
             // 結果を表示
-            document.getElementById('affirmationText').textContent = affirmation;
+            displayResults(affirmation, analysis);
+        }
+
+        // 目標を分析する関数
+        function analyzeGoal(goal) {
+            // キーワードを抽出
+            const keywords = extractKeywords(goal);
+            
+            // 行動を抽出
+            const actions = extractActions(goal);
+            
+            // 期限を検出
+            const timeline = extractTimeline(goal);
+            
+            // 感情を追加
+            const emotions = determineEmotions(goal);
+            
+            return {
+                original: goal,
+                keywords: keywords,
+                actions: actions,
+                timeline: timeline,
+                emotions: emotions
+            };
+        }
+
+        // キーワードを抽出
+        function extractKeywords(text) {
+            // 重要な名詞や動詞を抽出（簡易版）
+            const patterns = [
+                /英語|日本語|中国語|韓国語|語学/g,
+                /TOEIC|TOEFL|英検|資格/g,
+                /転職|就職|仕事|キャリア/g,
+                /健康|ダイエット|運動|筋トレ/g,
+                /勉強|学習|マスター|習得/g,
+                /収入|貯金|投資|お金/g,
+                /結婚|恋愛|人間関係|友達/g
+            ];
+            
+            let keywords = [];
+            patterns.forEach(pattern => {
+                const matches = text.match(pattern);
+                if (matches) keywords = keywords.concat(matches);
+            });
+            
+            return [...new Set(keywords)];
+        }
+
+        // 行動を抽出し、進行形に変換
+        function extractActions(text) {
+            const actions = [];
+            
+            // 動詞パターンを検出して進行形に変換
+            if (text.includes('マスター') || text.includes('習得')) {
+                actions.push('着実にマスターしている');
+            }
+            if (text.includes('勉強') || text.includes('学習')) {
+                actions.push('毎日楽しく学習を続けている');
+            }
+            if (text.includes('運動') || text.includes('筋トレ')) {
+                actions.push('健康的な運動習慣を実践している');
+            }
+            if (text.includes('転職') || text.includes('就職')) {
+                actions.push('理想のキャリアを実現している');
+            }
+            if (text.includes('ダイエット')) {
+                actions.push('健康的な体型を維持している');
+            }
+            if (text.includes('貯金') || text.includes('貯める')) {
+                actions.push('着実に資産を増やしている');
+            }
+            
+            // デフォルト行動
+            if (actions.length === 0) {
+                actions.push('目標に向かって着実に前進している');
+            }
+            
+            return actions;
+        }
+
+        // 期限を抽出
+        function extractTimeline(text) {
+            const patterns = [
+                /今年中/g,
+                /来年/g,
+                /\d+年後/g,
+                /\d+ヶ月/g,
+                /毎日/g,
+                /毎週/g
+            ];
+            
+            for (let pattern of patterns) {
+                const match = text.match(pattern);
+                if (match) return match[0];
+            }
+            
+            return '継続的に';
+        }
+
+        // 感情を決定
+        function determineEmotions(text) {
+            const emotions = [
+                '充実感',
+                '達成感',
+                '喜び',
+                '誇り',
+                '幸せ',
+                '感謝',
+                'ワクワク感'
+            ];
+            
+            // ランダムに2-3個選択
+            const selected = [];
+            for (let i = 0; i < 3; i++) {
+                const emotion = emotions[Math.floor(Math.random() * emotions.length)];
+                if (!selected.includes(emotion)) {
+                    selected.push(emotion);
+                }
+            }
+            
+            return selected;
+        }
+
+        // 5つの法則を適用してアファメーションを作成
+        function createAffirmation(analysis) {
+            // 法則1: 主語を私にする
+            let affirmation = '私は';
+            
+            // 法則2: 肯定文にする（否定語を除去）
+            // 法則3: 進行形の動詞を使う
+            if (analysis.actions.length > 0) {
+                affirmation += analysis.actions[0];
+            }
+            
+            // 法則4: 具体化する
+            if (analysis.keywords.length > 0) {
+                affirmation += `。${analysis.keywords[0]}の分野で`;
+            }
+            
+            if (analysis.timeline !== '継続的に') {
+                affirmation += `、${analysis.timeline}`;
+            }
+            
+            // 状況の追加
+            const situation = createSituation(analysis);
+            affirmation += situation;
+            
+            // 映像の追加
+            const visualization = createVisualization(analysis);
+            affirmation += visualization;
+            
+            // 法則5: プラス感情の言葉を入れる
+            const emotional = createEmotional(analysis);
+            affirmation += emotional;
+            
+            return {
+                full: affirmation,
+                situation: situation,
+                visualization: visualization,
+                emotional: emotional
+            };
+        }
+
+        // 状況を作成
+        function createSituation(analysis) {
+            let situation = '';
+            
+            if (analysis.keywords.includes('英語') || analysis.keywords.includes('TOEIC')) {
+                situation = '、ネイティブスピーカーと自信を持って会話している';
+            } else if (analysis.keywords.includes('転職') || analysis.keywords.includes('仕事')) {
+                situation = '、理想の職場で活躍している';
+            } else if (analysis.keywords.includes('健康') || analysis.keywords.includes('ダイエット')) {
+                situation = '、健康的で活力に満ちた毎日を送っている';
+            } else {
+                situation = '、理想の状態を実現している';
+            }
+            
+            return situation;
+        }
+
+        // 映像を作成
+        function createVisualization(analysis) {
+            let visualization = '。私は';
+            
+            if (analysis.keywords.length > 0) {
+                visualization += `${analysis.keywords[0]}において目覚ましい成果を上げ`;
+            } else {
+                visualization += '着実に成長し';
+            }
+            
+            visualization += '、周りからも認められている';
+            
+            return visualization;
+        }
+
+        // 感情的な要素を作成
+        function createEmotional(analysis) {
+            let emotional = '。この過程で私は';
+            
+            if (analysis.emotions.length > 0) {
+                emotional += `${analysis.emotions[0]}と${analysis.emotions[1]}を感じ`;
+            }
+            
+            emotional += '、毎日が豊かで意味のあるものになっている。';
+            emotional += '私は自分の成長を実感し、目標達成への確信を深めている。';
+            
+            return emotional;
+        }
+
+        // 結果を表示
+        function displayResults(affirmation, analysis) {
+            // アファメーションを表示
+            document.getElementById('affirmationText').innerHTML = affirmation.full;
+            
+            // 変換のポイントを表示
+            let breakdownHTML = '';
+            breakdownHTML += `<div class="breakdown-item">
+                <div class="breakdown-label">元の目標:</div>
+                <div>${analysis.original}</div>
+            </div>`;
+            
+            breakdownHTML += `<div class="breakdown-item">
+                <div class="breakdown-label">法則1（主語を私に）+ 法則3（進行形）:</div>
+                <div>「私は${analysis.actions[0]}」</div>
+            </div>`;
+            
+            breakdownHTML += `<div class="breakdown-item">
+                <div class="breakdown-label">法則4（具体化）:</div>
+                <div>キーワード: ${analysis.keywords.join('、') || 'なし'}</div>
+            </div>`;
+            
+            breakdownHTML += `<div class="breakdown-item">
+                <div class="breakdown-label">法則5（プラス感情）:</div>
+                <div>${analysis.emotions.join('、')}</div>
+            </div>`;
+            
+            document.getElementById('breakdown').innerHTML = breakdownHTML;
+            
+            // 3つのポイントを表示
+            let pointsHTML = '';
+            pointsHTML += `<div class="breakdown-item">
+                <div class="breakdown-label">1. 状況:</div>
+                <div>${affirmation.situation}</div>
+            </div>`;
+            pointsHTML += `<div class="breakdown-item">
+                <div class="breakdown-label">2. 映像:</div>
+                <div>${affirmation.visualization}</div>
+            </div>`;
+            pointsHTML += `<div class="breakdown-item">
+                <div class="breakdown-label">3. 感情:</div>
+                <div>${affirmation.emotional}</div>
+            </div>`;
+            
+            document.getElementById('threePoints').innerHTML = pointsHTML;
+            
+            // 結果セクションを表示
             document.getElementById('resultSection').style.display = 'block';
             
             // スクロール
